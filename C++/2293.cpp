@@ -23,51 +23,19 @@ n가지 종류의 동전이 있다. 각각의 동전이 나타내는 가치는 �
 	- DP로 하면 될듯
 */
 
-int n, k, cnt;
-vector<int> vec;
-
-void loop(int cur, int x, int depth)
-{
-	for (int i = x; i >= 0; i--)
-	{
-		for (int j = cur / vec[i]; j > 0; j--)
-		{
-			cur -= vec[i] * j;
-
-			// for (int k = 0; k < depth; k++)
-			// 	printf("  ");
-			// printf("i: %d, j: %d, ?: %d\n", i, j, cur == 0);
-			
-			if (cur == 0)
-			{
-				cnt++;
-				// printf("i: %d, j: %d, cur: %d, cnt: %d\n", 
-				// i, j, cur + vec[i] * j, cnt);
-			}
-			else
-				loop(cur, i - 1, depth + 1);
-
-			cur += vec[i] * j;
-		}
-	}
-}
-
-void solve()
-{
-	int cur;
-	cnt = 0;
-	cur = k;
-	
-	loop(cur, n - 1, 0);
-	
-	cout << cnt << endl;
-}
+int dp[10001];
 
 int main()
 {
+	int n, k;
+
 	cin >> n >> k;
 
-	for (int i = 0; i < n; i++)
+	vector<int> vec;
+
+	vec.push_back(0);
+
+	for (int i = 0; i <= n; i++)
 	{
 		int temp;
 
@@ -76,5 +44,11 @@ int main()
 		vec.push_back(temp);
 	}
 
-	solve();
+	dp[0] = 1;
+	
+	for (int i = 1; i <= n; i++)
+		for (int j = vec[i]; j <= k; j++)
+			dp[j] += dp[j - vec[i]];
+
+	cout << dp[k] << endl;;
 }

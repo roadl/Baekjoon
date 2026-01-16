@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <utility>
+#include <math.h>
 
 using namespace std;
 
@@ -11,17 +13,70 @@ using namespace std;
 			- 바로 전파 or 변경사항 없을때까지 전체 반복?
 	- 백조끼리 만나는건 어떻게 계산?
 		- 계산 후에 한쪽 백조로부터 가장 낮은 숫자로 갱신하면서 상하좌우 탐색
+
+2. 각 L로부터 있는 .칸들 전부 큐에 넣고 두 큐에서 가장 가까운 거리 / 2 (반올림)
+	- pruning?
 */
 
 int R, C;
 
 char map[1500][1500];
-int day_map[1500][1500];
+bool bitmap[1500][1500];
 
-int X1, X2, Y1, Y2;
+pair<int, int> L1, L2;
 
-int cal_day(int y, int x);
-void check_cell(int y, int x, int *min);
+vector<pair<int, int> > L1_queue, L2_queue;
+
+void recur(int y, int x, bool is_first)
+{
+	if (y < 0 || y >= R || x < 0 || x >= C ||
+		bitmap[y][x] == true || (map[y][x] != '.' && map[y][x] != 'L'))
+		return;
+
+	// printf("(%d, %d)\n", y, x);
+	
+	if (is_first)
+		L1_queue.push_back({y, x});
+	else
+		L2_queue.push_back({y, x});
+	bitmap[y][x] = true;
+
+	recur(y - 1, x, is_first);
+	recur(y + 1, x, is_first);
+	recur(y, x - 1, is_first);
+	recur(y, x + 1, is_first);
+}
+
+void solve()
+{
+	recur(L1.first, L1.second, true);
+	// printf("====\n");
+	recur(L2.first, L2.second, false);
+
+	int min = 3000;
+
+	if (L2_queue.size() == 0)
+	{
+		cout << 0 << endl;
+		return;
+	}
+
+
+	for (auto c1: L1_queue)
+	{
+		for (auto c2: L2_queue)
+		{
+			int distance = (abs(c1.first - c2.first) + abs(c1.second - c2.second)) / 2;
+
+			// printf("dis: %d\n", distance);
+
+			if (distance < min)
+				min = distance;
+		}
+	}
+
+	cout << min << endl;
+}
 
 int main()
 {
@@ -33,89 +88,25 @@ int main()
 		for (int j = 0; j < C; j++)
 		{
 			cin >> map[i][j];
-			day_map[i][j] = -1;
+			bitmap[i][j] = false;
 
 			if (map[i][j] == 'L')
 			{
 				if (temp == 0)
 				{
-					Y1 = i;
-					X1 = j;
+					L1.first = i;
+					L1.second = j;
 					temp++;
 				}
 				else
 				{
-					Y2 = i;
-					X2 = j;
+					L2.first = i;
+					L2.second = j;
 				}
 			}
 		}
 	
-	int flag = false;
-
-	while (!flag)
-	{
-		flag = true;
-		for (int i = 0; i < R; i++)
-		{
-			for (int j = 0; j < C; j++)
-			{
-				int day;
-				
-				if (map[i][j] == '.' || map[i][j] == 'L')
-					day = 0;
-				else
-					day = cal_day(i, j);
-
-				if (day != day_map[i][j])
-				{
-					day_map[i][j] = day;
-					flag = false;
-				}
-			}
-		}
-	}
-
-	for (int i = 0; i < R; i++)
-	{
-		for (int j = 0; j < C; j++)
-		{
-			if (map[i][j] == 'L')
-				cout << "L ";
-			else
-				cout << day_map[i][j] << " ";
-		}
-		cout << endl;
-	}
+	solve();
 
 	return 0;
-}
-
-int cal_day(int y, int x)
-{
-	int min = 1500;
-
-	check_cell(y - 1, x, &min);
-	check_cell(y + 1, x, &min);
-	check_cell(y, x - 1, &min);
-	check_cell(y, x + 1, &min);
-
-	printf("(%d, %d): %d\n", y, x, min);
-
-	return min;
-}
-
-void check_cell(int y, int x, int *min)
-{
-	int res = -1;
-
-	if (y < 0 || y >= R || x < 0 || x >= C)
-		res = -1;
-	else if (map[y][x] == '.' || map[y][x] == 'L')
-		res = 1;
-	else if (day_map[y][x] != -1)
-		res = day_map[y][x] + 1;
-	
-	if (res != -1 && res < *min)
-		*min = res;
 }

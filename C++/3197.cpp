@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <utility>
-#include <math.h>
+#include <queue>
 
 using namespace std;
 
@@ -13,69 +12,96 @@ using namespace std;
 			- 바로 전파 or 변경사항 없을때까지 전체 반복?
 	- 백조끼리 만나는건 어떻게 계산?
 		- 계산 후에 한쪽 백조로부터 가장 낮은 숫자로 갱신하면서 상하좌우 탐색
-
-2. 각 L로부터 있는 .칸들 전부 큐에 넣고 두 큐에서 가장 가까운 거리 / 2 (반올림)
-	- pruning?
 */
 
-int R, C;
+int R, C, cnt;
 
 char map[1500][1500];
 bool bitmap[1500][1500];
+bool bitmap_L[1500][1500];
 
-pair<int, int> L1, L2;
+queue<pair<int, int> > cur_map;
+queue<pair<int, int> > next_map;
+queue<pair<int, int> > cur_L;
+queue<pair<int, int> > next_L;
 
-vector<pair<int, int> > L1_queue, L2_queue;
+int X1, X2, Y1, Y2;
 
-void recur(int y, int x, bool is_first)
+void recur_L(int y, int x)
 {
-	if (y < 0 || y >= R || x < 0 || x >= C ||
-		bitmap[y][x] == true || (map[y][x] != '.' && map[y][x] != 'L'))
+	if (y < 0 || y >= R || x < 0 || x >= C || bitmap_L[y][x])
 		return;
 
-	// printf("(%d, %d)\n", y, x);
-	
-	if (is_first)
-		L1_queue.push_back({y, x});
-	else
-		L2_queue.push_back({y, x});
-	bitmap[y][x] = true;
+	bitmap_L[y][x] = true;
+		
+	if (y == Y2 && x == X2)
+	{
+		cout << cnt << endl;
+		exit(0);
+	}
+	else if (map[y][x] == '.')
+		cur_L.push({y, x});
+	else if (map[y][x] == 'X')
+	{
+		next_L.push({y, x});
+		return;
+	}
 
-	recur(y - 1, x, is_first);
-	recur(y + 1, x, is_first);
-	recur(y, x - 1, is_first);
-	recur(y, x + 1, is_first);
+	recur_L(y - 1, x);
+	recur_L(y + 1, x);
+	recur_L(y, x - 1);
+	recur_L(y, x + 1);
 }
 
-void solve()
+void cal_L()
 {
-	recur(L1.first, L1.second, true);
-	// printf("====\n");
-	recur(L2.first, L2.second, false);
-
-	int min = 3000;
-
-	if (L2_queue.size() == 0)
+	while(cur_L.size())
 	{
-		cout << 0 << endl;
+		pair<int, int> cur = cur_L.front();
+
+		int y = cur.first;
+		int x = cur.second;
+
+		cur_L.pop();
+
+		recur_L(y, x);
+	}
+}
+
+void recur_map(int y, int x)
+{
+	if (y < 0 || y >= R || x < 0 || x >= C || bitmap[y][x])
+		return;
+
+	bitmap[y][x] = true;
+		
+	if (map[y][x] == '.')
+		cur_map.push({y, x});
+	else if (map[y][x] == 'X')
+	{
+		next_map.push({y, x});
 		return;
 	}
 
+	recur_map(y - 1, x);
+	recur_map(y + 1, x);
+	recur_map(y, x - 1);
+	recur_map(y, x + 1);
+}
 
-	for (auto c1: L1_queue)
+void cal_map()
+{
+	while(cur_map.size())
 	{
-		for (auto c2: L2_queue)
-		{
-			int distance = (abs(c1.first - c2.first) + abs(c1.second - c2.second)) / 2;
+		pair<int, int> cur = cur_map.front();
 
-			// printf("dis: %d\n", distance);
+		int y = cur.first;
+		int x = cur.second;
 
-			if (distance < min)
-				min = distance;
-		}
+		cur_map.pop();
+
+		recur_map(y, x);
 	}
-
-	cout << min << endl;
 }
 
 int main()
@@ -89,24 +115,57 @@ int main()
 		{
 			cin >> map[i][j];
 			bitmap[i][j] = false;
+			bitmap_L[i][j] = false;
 
 			if (map[i][j] == 'L')
 			{
 				if (temp == 0)
 				{
-					L1.first = i;
-					L1.second = j;
+					Y1 = i;
+					X1 = j;
 					temp++;
+					cur_L.push({i, j});
 				}
 				else
 				{
-					L2.first = i;
-					L2.second = j;
+					Y2 = i;
+					X2 = j;
 				}
+			}
+			if (map[i][j] == '.' || map[i][j] == 'L')
+			{
+				cur_map.push({i, j});
 			}
 		}
 	
-	solve();
+	cnt = 0;
+
+	while (true)
+	{	
+		cal_L();
+		cal_map();
+
+		cur_L = next_L;
+		cur_map = next_map;
+
+		next_L = queue<pair<int, int> >();
+		
+		while (!next_map.empty())
+		{
+			pair<int, int> p = next_map.front();
+
+			int y = p.first;
+			int x = p.second;
+
+			map[y][x] = '.';
+			bitmap[y][x] = false;
+			bitmap_L[y][x] = false;
+
+			next_map.pop();
+		}
+
+		cnt++;
+	}
 
 	return 0;
 }

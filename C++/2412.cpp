@@ -15,24 +15,21 @@ using namespace std;
 	- 이동 횟수가 제일 적은거별로 queue에 담아놓고 다음에 빼서 쓰기
 */
 
-typedef struct node {
+typedef struct node
+{
 	int x;
 	int y;
 	int cnt = -1;
 } Node;
 
 int n, T;
-vector<Node> vec;
+// y, x, cnt
+map<int, vector<int>> m;
 queue<Node> cur_queue;
-queue<Node> next_queue;
 
-bool compare_node(Node n1, Node n2)
+bool compare_first(const pair<const int, int> &p, int value)
 {
-	if (n1.y > n2.y)
-		return true;
-	if (n1.y == n2.y && n1.x > n2.x)
-		return true;
-	return false;
+	return p.first < value;
 }
 
 int main()
@@ -44,41 +41,47 @@ int main()
 
 	cur_queue.push({0, 0, 0});
 
-	for (int i = 0; i < n; i++) {
-		Node input;
-	
-		cin >> input.x >> input.y;
+	while (n--)
+	{
+		int x, y;
 
-		vec.push_back(input);
+		cin >> x >> y;
+
+		m[y].push_back(x);
 	}
 
-	sort(vec.begin(), vec.end(), compare_node);
+	for (auto &p : m)
+		sort(p.second.begin(), p.second.end());
 
-	// for (auto v: vec)
-	// 	cout << v.x << ", " << v.y << endl;
+	while (!cur_queue.empty())
+	{
+		Node cur = cur_queue.front();
 
-	while (true) {
-		while (!cur_queue.empty()) {
-			Node cur = cur_queue.front();
+		cur_queue.pop();
 
-			cur_queue.pop();
-
-			if (cur.y == T) {
-				cout << cur.cnt << "\n";
-				exit(0);
-			}
-
-			for (auto v: vec) {
-				if (abs(v.x - cur.x) <= 2 && abs(v.y - cur.y) <= 2
-					&& (v.cnt == -1 || v.cnt > cur.cnt + 1)) {
-						v.cnt = cur.cnt + 1;
-						next_queue.push(v);
-					}
-			}
+		if (cur.y == T)
+		{
+			cout << cur.cnt << "\n";
+			exit(0);
 		}
 
-		cur_queue = next_queue;
-		while (!next_queue.empty())
-			next_queue.pop();
+		for (int i = cur.y - 2; i <= cur.y + 2; i++)
+		{
+			auto it = m.find(i);
+			if (it == m.end())
+				continue;
+
+			auto &v = it->second;
+
+			auto lo = lower_bound(v.begin(), v.end(), cur.x - 2);
+			auto hi = upper_bound(v.begin(), v.end(), cur.x + 2);
+
+			for (auto iter = lo; iter != hi; iter++)
+				cur_queue.push({*iter, i, cur.cnt + 1});
+
+			v.erase(lo, hi);
+		}
 	}
+
+	cout << "-1" << "\n";
 }

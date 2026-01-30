@@ -8,7 +8,6 @@ int N, M;
 
 vector<int> cranes;
 vector<int> boxes;
-vector<bool> check;
 
 int main()
 {
@@ -22,42 +21,36 @@ int main()
 		cin >> t;
 		cranes.push_back(t);
 	}
+	cranes.push_back(0);
 
 	cin >> M;
 
 	for (int i = 0; i < M; i++) {
 		cin >> t;
 		boxes.push_back(t);
-		check.push_back(false);
 	}
 
-	sort(cranes.begin(), cranes.end());
-	sort(boxes.begin(), boxes.end());
+	sort(cranes.rbegin(), cranes.rend());
+	sort(boxes.rbegin(), boxes.rend());
 
-	if (cranes[N - 1] < boxes[M - 1]) {
+	if (cranes[0] < boxes[0]) {
 		cout << "-1\n";
 		return 0;
 	}
 
-	int step = 1;
-	int count = 0;
+	int max_cnt = 0;
+	int cur_cnt = 0;
+	int cur_crane = 0;
 
-	while (true) {
-		for (int i = cranes.size() - 1; i >= 0; i--) {
-			for (int j = boxes.size() - 1; j >= 0; j--) {
-				if (check[j] || boxes[j] > cranes[i])
-					continue;
-				check[j] = true;
-				count++;
-				break;
-			}
+	for (int i = 0; i < M;) {
+		if (boxes[i] <= cranes[cur_crane + 1]) {
+			cur_crane++;
+			i += cur_cnt;
+			continue;
 		}
-
-		if (count == M)
-			break;
-
-		step++;
+		cur_cnt++;
+		i += (cur_crane + 1);
 	}
 
-	cout << step << "\n";
+	cout << cur_cnt << "\n";
 }

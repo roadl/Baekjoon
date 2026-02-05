@@ -1,115 +1,68 @@
 #include <iostream>
 #include <vector>
-#include <stdlib.h>
+#include <string>
 
 using namespace std;
 
-int r, c;
-
-int **map;
-
-int cal_possible_max(int i, int j)
-{
-	if (map[i][j] == 0)
-		return 0;
-
-	int right = c - j - 1;
-
-	int hor = i / 2 + 1;
-	int ver = (j < right ? j : right) + 1;
-	
-	return (hor < ver ? hor : ver);
-}
-
-bool check_dia(int i, int j, int expect)
-{
-	int k;
-	int n = expect * 2 - 2;
-
-	//cout << "check " << i << ", " << j << endl;
-
-	for (int k = 1; k <= expect - 1; k++)
-	{
-		//cout << "[" << i -k << "]" << "[" << j - k << "], [" << i - k << "]"  << "[" << j + k << "]" << endl;
-		if (!(map[i - k][j - k] == 1 && map[i - k][j + k] == 1))
-			return false;
-	}
-	for (k --; k >= 0; k--) 
-	{
-		//cout << "[" << i - n + k << "]" << "[" << j - k << "], [" << i - n + k << "]"  << "[" << j + k << "]" << endl;
-		if (!(map[i - n + k][j - k] == 1 && map[i - n + k][j + k] == 1))
-			return false;
-	}
-	return true;
-}
-
-int check_max_dia(int i, int j, int max)
-{
-	int possible_max;
-
-	possible_max = cal_possible_max(i, j);
-
-	if (map[i][j] == 0)
-		return 0;
-
-	for (int a = possible_max; a > 1; a--)
-	{
-		if (a <= max)
-			return 0;
-		if (check_dia(i, j, a))
-			return a;
-	}
-	
-	return 1;
-}
+int R, C;
+vector<string> map;
+int dp[750][750][2];
 
 void solve()
 {
-	int max = 0;
+	int res = 0;
 
-	for (int i = 0; i < r; i++)
-	{
-		for (int j = 0; j < c; j++)
-		{
-			int cur;
+	for (int i = R - 1; i >= 0; i--) {
+		for (int j = 0; j < C; j++) {
+			if (map[i][j] == '0') {
+				dp[i][j][0] = 0;
+				dp[i][j][0] = 0;
+				continue;
+			}
+			dp[i][j][0] = 1;
+			dp[i][j][1] = 1;
 
-			cur = check_max_dia(i, j, max);
-			//cout << cur << " ";
-			if (cur > max)
-				max = cur;
+			if (i + 1 < R && j - 1 >= 0)
+				dp[i][j][0] += dp[i + 1][j - 1][0];
+			if (i + 1 < R && j + 1 < C)
+				dp[i][j][1] += dp[i + 1][j + 1][1];
 		}
-		//cout << endl;
 	}
-	cout << max << endl;
+
+	for (int i = 0; i < R; i++) {
+		for (int j = 0; j < C; j++) {
+			if (map[i][j] == '0')
+				continue;
+
+			int max = dp[i][j][0] < dp[i][j][1] ? dp[i][j][0] : dp[i][j][1];
+
+			for (int k = max; k > res; k--) {
+				int offset = k - 1;
+				if (dp[i + offset][j + offset][0] >= k &&
+					dp[i + offset][j - offset][1] >= k) {
+					res = k;
+					break;
+				}
+			}
+		}
+	}
+
+	cout << res << "\n";
 }
 
 int main()
 {
-	cin >> r;
-	cin >> c;
+	ios::sync_with_stdio(false);
+	cin.tie(0);
 
-	map = (int **)malloc(sizeof(int *) * r);
-	for (int i = 0; i < r; i++)
-	{
-		map[i] = (int *)malloc(sizeof(int) * c);
+	cin >> R >> C;
 
-		string str;
+	string str;
 
+	for (int i = 0; i < R; i++) {
 		cin >> str;
-
-		for (int j = 0; j < str.length(); j++)
-			map[i][j] = str[j] - '0';
+		map.push_back(str);
 	}
-
-	// for (int i = 0; i < r; i++)
-	// {
-	// 	for (int j = 0; j < c; j++)
-	// 	{
-	// 		//solve_map[i][j] = 0;
-	// 		cout << map[i][j] << " ";
-	// 	}
-	// 	cout << endl;
-	// }
 
 	solve();
 

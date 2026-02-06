@@ -8,6 +8,7 @@ int N, M;
 
 vector<string> map;
 bool visited[51][51] = {0};
+int dp[51][51] = {-1};
 int res = 0;
 
 void recur(int x, int y, int cnt) {
@@ -17,6 +18,9 @@ void recur(int x, int y, int cnt) {
 			res = cnt;
 		return;
 	}
+
+	if (dp[y][x] >= cnt)
+		return;
 
 	if (visited[y][x]) {
 		cout << "-1\n";

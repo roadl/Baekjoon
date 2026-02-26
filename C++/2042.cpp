@@ -43,7 +43,7 @@ long long cal_tree(int target, long long value, int node, int start, int end)
 
 long long cal_sum(int left, int right, int node, int start, int end)
 {
-	if (left == start && right == end)
+	if (left <= start && end <= right)
 		return tree[node];
 
 	int mid = (start + end) / 2;

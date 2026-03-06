@@ -1,6 +1,8 @@
     #include <iostream>
+    #include <map>
     #include <vector>
     #include <algorithm>
+    #include <queue>
 
     using namespace std;
 
@@ -17,23 +19,27 @@
         bags.resize(K);
 
         for (int i = 0; i < N; i++)
-            cin >> gems[i].second >> gems[i].first;
+            cin >> gems[i].first >> gems[i].second;
 
         for (int i = 0; i < K; i++)
             cin >> bags[i];
 
-        sort(gems.rbegin(), gems.rend());
+        sort(gems.begin(), gems.end());   // weight
         sort(bags.begin(), bags.end());
 
+        priority_queue<int> pq;
+
         unsigned long long result = 0;
+        int idx = 0;
 
         for (int i = 0; i < K; i++) {
-            for (int j = 0; j < gems.size(); j++) {
-                if (gems[j].second <= bags[i]) {
-                    result += gems[j].first;
-                    gems.erase(gems.begin() + j);
-                    break;
-                }
+            while (idx < N && gems[idx].first <= bags[i]) {
+                pq.push(gems[idx].second);
+                idx++;
+            }
+            if (!pq.empty()) {
+                result += pq.top();
+                pq.pop();
             }
         }
 

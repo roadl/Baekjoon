@@ -1,12 +1,10 @@
 #include <iostream>
 #include <vector>
-#include <map>
 
 using namespace std;
 
 int N;
 vector<int> primes;
-map<int, int> m;
 
 void get_prime(int n) {
 	vector<bool> is_prime(n + 1, true);

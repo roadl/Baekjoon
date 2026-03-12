@@ -7,24 +7,9 @@ using namespace std;
 typedef long long ll;
 
 int T, N, M;
-map<ll, ll> map_a;
-map<ll, ll> map_b;
+map<int, int> map_a;
+map<int, int> map_b;
 vector<int> vec;
-
-void top_down(ll sum, int left, int right, bool is_left_child, bool is_a)
-{
-	if (is_a)
-		map_a[sum]++;
-	else
-		map_b[sum]++;
-
-	if (left == right)
-		return;
-
-	if (is_left_child)
-		top_down(sum - vec[right], left, right - 1, true, is_a);
-	top_down(sum - vec[left], left + 1, right, false, is_a);
-}
 
 int main() 
 {
@@ -35,42 +20,41 @@ int main()
 
 	cin >> N;
 
-	ll sum = 0;
+	vec.resize(N);
+
+	for (int i = 0; i < N; i++)
+		cin >> vec[i];
 
 	for (int i = 0; i < N; i++) {
-		int n;
-
-		cin >> n;
-
-		sum += n;
-		vec.push_back(n);
+		int sum = 0;
+		for (int j = i; j < N; j++) {
+			sum += vec[j];
+			map_a[sum]++;
+		}
 	}
-
-	top_down(sum, 0, N - 1, true, true);
-
-	vec.clear();
 
 	cin >> N;
 
-	sum = 0;
+	vec.clear();
+	vec.resize(N);
+
+	for (int i = 0; i < N; i++)
+		cin >> vec[i];
 
 	for (int i = 0; i < N; i++) {
-		int n;
-
-		cin >> n;
-
-		sum += n;
-		vec.push_back(n);
+		int sum = 0;
+		for (int j = i; j < N; j++) {
+			sum += vec[j];
+			map_b[sum]++;
+		}
 	}
-
-	top_down(sum, 0, N - 1, true, false);
-
+	
 	ll res = 0;
 
 	for (auto iter: map_a)
-		res += iter.second * map_b[T - iter.first];
+		res += (ll)iter.second * map_b[T - iter.first]; 
 
-	cout << res << endl;
+	cout << res << '\n';
 
 	return 0;
 }

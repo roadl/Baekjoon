@@ -20,7 +20,7 @@ int main()
 
 	for (int i = N - 1; i > 0; i--)
 		for (int j = 0; j <= i - 1; j++)
-			dp[i - 1][j] = dp[i - 1][j] + max(dp[i][j], dp[i][j + 1]);
+			dp[i - 1][j] += max(dp[i][j], dp[i][j + 1]);
 
 	cout << dp[0][0] << '\n';
 
